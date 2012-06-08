@@ -1,5 +1,4 @@
-TODO: port this
-doc = "Usage: example.py [options] <arguments>...
+doc = "Usage: example.js [options] <arguments>...
 
 Options:
   -h --help            show this help message and exit
@@ -21,11 +20,7 @@ Options:
   --testsuite=dir      run regression tests from dir
   --doctest            run doctest on myself"
 
-require 'docopt'
+docopt = require('./docopt').docopt
 
+options = docopt(doc, void 0, true, '1.0.0')  # parse options based on doc above
 
-if __FILE__ == $0
-    options = docopt(doc, '1.0.0')  # parse options based on doc above
-    puts options.inspect
-    puts ARGV.inspect
-end
