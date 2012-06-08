@@ -40,8 +40,8 @@ class Option
 
 # same as TokenStream in python
 class TokenStream extends Array
-    constructor: (source, @error) -> 
-        stream = 
+    constructor: (source, @error) ->
+        stream =
            if source.constructor is String
                source.split(/\s+/)
            else
@@ -79,8 +79,7 @@ parse_shorts = (tokens, options) ->
 
 
 parse_long = (tokens, options) ->
-    [_, raw,
-     value] = tokens.current().match(/(.*?)=(.*)/) ? [null,
+    [_, raw, value] = tokens.current().match(/(.*?)=(.*)/) ? [null,
                                                       tokens.current(), '']
     tokens.move()
     value = if value == '' then null else value
@@ -99,6 +98,80 @@ parse_long = (tokens, options) ->
         tokens.error "#{opt.name} must not have an argument"
     opt.value = value or true
     return [opt]
+
+
+parse_pattern = (source, options) ->
+    tokens = new TokenStream(source.replace(/([\[\]\(\)\|]|\.\.\.)/, ' $1 '),
+                         UsageMessageError)
+    result = parse_expr(tokens, options)
+    if tokens.current() is not null
+        raise tokens.error('unexpected ending: %r' % ' '.join(tokens))
+    return new Required(result)
+
+
+parse_expr = (tokens, options) ->
+    # expr ::= seq , ( '|' seq )* ;
+    seq = parse_seq(tokens, options)
+
+    if tokens.current() != '|'
+        return seq
+
+    result = if seq.length > 1 then [new Required(seq)] else seq
+    while tokens.current() == '|'
+        tokens.next()
+        seq = parse_seq(tokens, options)
+        result.push(if seq.length > 1 then [new Required(seq)] else seq)
+
+    return if result.length > 1 then [new Either(result)] else result
+
+
+parse_seq = (tokens, options) ->
+    # seq ::= ( atom [ '...' ] )* ;
+
+    result = []
+    while tokens.current() not in [null, ']', ')', '|']
+        atom = parse_atom(tokens, options)
+        if tokens.current() == '...'
+            atom = [new OneOrMore(atom)]
+            tokens.next()
+        result.push(atom)
+    return result
+
+
+parse_atom = (tokens, options) ->
+    # atom ::= '(' expr ')' | '[' expr ']' | '[' 'options' ']' | '--'
+    #        | long | shorts | argument | command ;
+
+    token = tokens.current()
+    result = []
+    if token == '('
+        tokens.next()
+        
+        result = [new Required(parse_expr(tokens, options))]
+        if tokens.next() != ')'
+            raise tokens.error("Unmatched '('")
+        return result
+    else if token == '['
+        tokens.next()
+        if tokens.current() == 'options'
+            result = [new Optional(new AnyOptions())]
+            tokens.next()
+        else
+            result = [new Optional(parse_expr(tokens, options))]
+        if tokens.next() != ']'
+            raise tokens.error("Unmatched '['")
+        return result
+    else if token == '--'
+        tokens.next()
+        return []  # allow "usage: prog [-o] [--] <arg>"
+    else if token[0..2] is '--'
+        return parse_long(tokens, options)
+    else if token[0] is '-'
+        return parse_shorts(tokens, options)
+    else if (token[0] is '<' and token[-1] is '>') or /^[^a-z]*$/.test(token)
+        return [new Argument(tokens.next())]
+    else
+        return [new Command(tokens.next())]
 
 
 parse_args = (source, options) ->
@@ -121,12 +194,16 @@ parse_args = (source, options) ->
 parse_doc_options = (doc) ->
     (Option.parse('-' + s) for s in doc.split(/^ *-|\n *-/)[1..])
 
-printable_usage = (doc) ->
-    if usage = (/\s*usage:\s+/i).exec(doc)
+printable_usage = (doc, name) ->
+    if usage = (/\s*usage:\s*/i).exec(doc)[0]
         usage = usage.replace(/^\s+/, '')
+        indent = '\n' + /(^)?[^\n]*$/.exec(usage)[0].replace(/./g, (c) ->
+           return (if c is '\t' then '\t' else ' '))
         uses = doc.substr(usage.length).split(/\n\s*\n/)[0].split('\n')
-        ws = (new Array usage.length+1).join(' ')
-        return usage + (u.replace /^\s+|\s+$/, '' for u in uses).join(ws)
+        uses = (u.replace /^\s+|\s+$/, '' for u in uses)
+        if name
+            uses = (u.replace /^[^\s]+/, name for u in uses)
+        return usage + uses.join(indent)
     else
         throw new UsageMessageError("the first word in the usage should be usage.")
 
@@ -146,8 +223,8 @@ extras = (help, version, options, doc) ->
         print(version)
         exit()
 
-docopt = (doc, argv=process.argv[1..], help=true, version=null) ->
-    DocoptExit.usage = docopt.usage = usage = printable_usage(doc)
+docopt = (doc, argv=process.argv[1..], name=null, help=true, version=null) ->
+    DocoptExit.usage = docopt.usage = usage = printable_usage(doc, name)
     pot_options = parse_doc_options(doc)
     [options, args] = parse_args(argv, options=pot_options)
 
@@ -162,13 +239,14 @@ docopt = (doc, argv=process.argv[1..], help=true, version=null) ->
 #        return args
 #    throw new DocoptExit()
 
-__all__ = 
+__all__ =
     docopt       : docopt
     Option       : Option
     TokenStream  : TokenStream
     parse_long   : parse_long
     parse_shorts : parse_shorts
     parse_args   : parse_args
+    printable_usage: printable_usage
 
 for fun of __all__
     exports[fun] = __all__[fun]

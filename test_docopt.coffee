@@ -6,8 +6,6 @@ eq = (a, b) ->
     bs = b.toString()
     if as == bs then return else throw new Error "#{as} != #{bs}"
 
-doc = require './docopt'
-
 ((module) -> 
     `with (module) {//`
     tests = 
@@ -77,6 +75,38 @@ doc = require './docopt'
                 [[new Option('-W', null, 1, 'all')]
                  ['ARG']])
 
+        test_printable_usage: ->
+            usage = 'Usage: prog <a> <b> <c>\n\n'
+            eq printable_usage(usage, 'my_script'), 'Usage: my_script <a> <b> <c>'
+            eq printable_usage(usage, null), 'Usage: prog <a> <b> <c>'
+
+            usage = 'Usage:\tprog <a> <b> <c>\n' + 
+                            'prog --version\n'   +
+                            'prog (--help | -h)\n\n'
+            eq printable_usage(usage, 'rn'), 'Usage:\trn <a> <b> <c>\n' +
+                                             '      \trn --version\n'   +
+                                             '      \trn (--help | -h)'
+            eq printable_usage(usage, null), 'Usage:\tprog <a> <b> <c>\n' +
+                                             '      \tprog --version\n'   +
+                                             '      \tprog (--help | -h)'
+
+            usage = 'Usage:\n' +
+                    '  prog <a> <b> <c>\n' + 
+                    '  prog --version\n'   +
+                    '  prog (--help | -h)\n\n'
+            eq printable_usage(usage, 'rn'), 'Usage:\n' +
+                                             '  rn <a> <b> <c>\n' +
+                                             '  rn --version\n'   +
+                                             '  rn (--help | -h)'
+            eq printable_usage(usage, null), 'Usage:\n' +
+                                             '  prog <a> <b> <c>\n' +
+                                             '  prog --version\n'   +
+                                             '  prog (--help | -h)'
+
+            usage = 'usage:nospace'
+            eq printable_usage(usage, null), 'usage: nospace'
+
+
     `}`
 
     print '================================================================'
@@ -98,4 +128,4 @@ doc = require './docopt'
 
     print "#{passes} successes, #{errors.length} failures"
     print '================================================================'
-)(doc)
+)(require './docopt')
