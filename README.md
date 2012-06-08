@@ -3,9 +3,9 @@ TODO: This ruby page should be adopted for CoffeeScript/JavaScript.
 `docopt` – command line option parser, that will make you smile
 ===============================================================================
 
-Help porting [docopt](http://docopt.org/) to Ruby!
+Help porting [docopt](http://docopt.org/) to CoffeeScript and JavaScript!
 
-Isn't it awesome how `optparse` and other option parsers generate help and
+Isn't it awesome how Python's `optparse` and other option parsers generate help and
 usage-messages based on your code?!
 
 Hell no!  You know what's awesome?  It's when the option parser *is* generated
@@ -16,7 +16,7 @@ to your code.
 
 Now you can write an awesome, readable, clean, DRY code like *that*:
 
-```ruby
+```coffeescript
 doc = "Usage: example.py [options] <arguments>...
 
 Options:
@@ -39,25 +39,23 @@ Options:
   --testsuite=dir      run regression tests from dir
   --doctest            run doctest on myself"
 
-require 'docopt'
+docopt = require('./docopt').docopt
 
-
-if __FILE__ == $0
+if process.mainModule.id == module.id
     options = docopt(doc, '1.0.0')  # parse options based on doc above
-    puts options.inspect
-    puts ARGV.inspect
+    console.log options['--verbose']
 end
 ```
 
 Hell yeah! The option parser is generated based on `doc` string above, that you
 pass to the `docopt` function.
 
-API `require 'docopt'`
+API `require './docopt'`
 ===============================================================================
 
-###`options = docopt(doc, version=nil, help=true)`
+###`options = docopt(doc, argv=process.argv[1..], help=true, version=null)`
 
-`docopt` takes 1 required and 2 optional arguments:
+`docopt` takes 1 required and 3 optional arguments:
 
 - `doc` should be a string that
 describes **options** in a human-readable format, that will be parsed to create
@@ -71,6 +69,10 @@ section. Here is a quick example of such a string:
         -v --verbose  Print more text.
         --quiet       Print less text.
         -o FILE       Specify output file [default: ./test.txt].
+
+- `argv` is an optional argument vector; by default it is the argument vector 
+passed to your program (process.argv[1..]). You can supply it with list of 
+strings (similar to process.argv) e.g. ['--verbose', '-o', 'hai.txt'].
 
 - `help`, by default `true`, specifies whether the parser should automatically
 print the usage-message (supplied as `doc`) in case `-h` or `--help` options
@@ -150,7 +152,7 @@ into the option description, in form `[default: <your-default-value>]`.
         --output=FILE    Output file [default: test.txt]
         --directory=DIR  Some directory [default: ./]
 
-Something missing? Help porting [docopt](http://docopt.org/) to Ruby!
+Something missing? Help porting [docopt](http://docopt.org/) to CoffeeScript/JavaScript!
 ===============================================================================
 
 Compatibility notice:
