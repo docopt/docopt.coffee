@@ -1,4 +1,4 @@
-print = console.log
+print = () -> console.log.apply(@, [].slice.call(arguments))
 
 class UsageMessageError extends Error
     constructor: (message) ->
@@ -50,6 +50,7 @@ class TokenStream extends Array
     move: -> @shift() or null
     current: -> @[0] or null
     toString: -> ([].slice.apply @).toString()
+    join: (glue) -> ([].join.apply @, glue)
     error: (message) ->
         throw new @error(message)
 
@@ -105,7 +106,7 @@ parse_pattern = (source, options) ->
                          UsageMessageError)
     result = parse_expr(tokens, options)
     if tokens.current() is not null
-        raise tokens.error('unexpected ending: %r' % ' '.join(tokens))
+        raise tokens.error('unexpected ending: ' + tokens.join(' '))
     return new Required(result)
 
 
@@ -195,17 +196,17 @@ parse_doc_options = (doc) ->
     (Option.parse('-' + s) for s in doc.split(/^ *-|\n *-/)[1..])
 
 printable_usage = (doc, name) ->
-    if usage = (/\s*usage:\s*/i).exec(doc)[0]
-        usage = usage.replace(/^\s+/, '')
-        indent = '\n' + /(^)?[^\n]*$/.exec(usage)[0].replace(/./g, (c) ->
-           return (if c is '\t' then '\t' else ' '))
-        uses = doc.substr(usage.length).split(/\n\s*\n/)[0].split('\n')
-        uses = (u.replace /^\s+|\s+$/, '' for u in uses)
-        if name
-            uses = (u.replace /^[^\s]+/, name for u in uses)
-        return usage + uses.join(indent)
-    else
-        throw new UsageMessageError("the first word in the usage should be usage.")
+    [usage, patterns] = doc.split(/(?:^|\n)([\s^\n]*usage:\s*)/i)[1..2]
+    usage = usage.replace(/^\s+/, '')
+    if not /\s$/.test(usage) then usage += ' '
+    indent = '\n' + /(^)?[^\n]*$/.exec(usage)[0].replace(/./g, (c) ->
+       return (if c is '\t' then '\t' else ' '))
+    oldname = /^[^\s]+/.exec(patterns)[0]
+    if name is null then name = oldname
+    uses = patterns.split(/\n\s*\n/)[0]
+    uses = uses.split(new RegExp('(?:^|\\n)\\s*' + oldname))
+    uses = (name + u.replace /\s+$/, '' for u in uses[1..])
+    return usage + uses.join(indent)
 
 formal_usage = (printable_usage) ->
     pu = printable_usage.split()[1..]  # split and drop "usage:"
@@ -223,15 +224,21 @@ extras = (help, version, options, doc) ->
         print(version)
         exit()
 
+class Dict extends Object
+    constructor: (pairs) ->
+        (@[key] = value for [key, value] in pairs)
+    toString: () ->
+        '{' + (k + ': ' + @[k] for k of @).join(',\n  ') + '}'
+
 docopt = (doc, argv=process.argv[1..], name=null, help=true, version=null) ->
     DocoptExit.usage = docopt.usage = usage = printable_usage(doc, name)
     pot_options = parse_doc_options(doc)
-    [options, args] = parse_args(argv, options=pot_options)
+    [options, args] = parse_args(argv, pot_options)
 
     extras(help, version, options, doc)
-    formal_pattern = parse_pattern(formal_usage(usage), options=pot_options)
-#    pot_arguments = [a for a in formal_pattern.flat
-#                     if type(a) in [Argument, Command]]
+    formal_pattern = parse_pattern(formal_usage(usage), pot_options)
+#    pot_arguments = (a for a in formal_pattern.flat
+#                     if a.constructor in [Argument, Command])
 #    [matched, left, arguments] = formal_pattern.fix().match(argv)
 #    if matched and left == []:  # better message if left?
 #        args = Dict((a.name, a.value) for a in
