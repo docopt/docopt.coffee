@@ -1,14 +1,34 @@
-# it's a troublesome policy that node's got...
-
-print = console.log
+print = () -> console.log.apply @, [].slice.call(arguments)
 eq = (a, b) ->
     as = a.toString()
     bs = b.toString()
     if as == bs then return else throw new Error "#{as} != #{bs}"
 
-((module) -> 
-    `with (module) {//`
-    tests = 
+(() ->
+    [setup, teardown, clear] = (() ->
+        buffer = ''
+        cl = console.log
+        psw = process.stdout.write
+        [() ->
+            console.log = () ->
+                buffer += ([].slice.call arguments).join() + '\n'
+            process.stdout.write = () ->
+                buffer += ([].slice.call arguments).join()
+            null
+
+        () ->
+             console.log = cl
+             process.stdout.write = psw
+             null
+
+        () ->
+            stdout = buffer
+            buffer = ''
+            stdout]
+    )()
+
+    `with (this) //`
+    tests =
         test_opt_parse: ->
             eq Option.parse('-h'), new Option('-h', null)
             eq Option.parse('-h'), new Option('-h', null)
@@ -80,7 +100,7 @@ eq = (a, b) ->
             eq printable_usage(usage, 'my_script'), 'Usage: my_script <a> <b> <c>'
             eq printable_usage(usage, null), 'Usage: prog <a> <b> <c>'
 
-            usage = 'Usage:\tprog <a> <b> <c>\n' + 
+            usage = 'Usage:\tprog <a> <b> <c>\n' +
                             'prog --version\n'   +
                             'prog (--help | -h)\n\n'
             eq printable_usage(usage, 'rn'), 'Usage:\trn <a> <b> <c>\n' +
@@ -91,7 +111,7 @@ eq = (a, b) ->
                                              '      \tprog (--help | -h)'
 
             usage = 'Usage:\n' +
-                    '  prog <a> <b> <c>\n' + 
+                    '  prog <a> <b> <c>\n' +
                     '  prog --version\n'   +
                     '  prog (--help | -h)\n\n'
             eq printable_usage(usage, 'rn'), 'Usage:\n' +
@@ -107,25 +127,44 @@ eq = (a, b) ->
             eq printable_usage(usage, null), 'usage: nospace'
 
 
-    `}`
+    wr = console.log
+    wr '================================================================'
 
-    print '================================================================'
+    setup()
 
+    number = 0
     passes = 0
-    errors = []
+    failures = 0
+    results = []
     for test of tests
+        continue if test[0..3] isnt 'test'
         try
             tests[test]()
-            passes += 1
-            process.stdout.write '.'
+            results.push ['.', test, 'OK', clear()]
         catch e
-            errors.push([test, e])
-            process.stdout.write 'F'
-    print ''
+            results.push ['F', test, e.message, clear()]
 
-    for [test, e] in errors
-        print "In test #{test}, #{e.message}"
+    teardown()
 
-    print "#{passes} successes, #{errors.length} failures"
-    print '================================================================'
-)(require './docopt')
+    for result in results
+        if result[0] == 'F'
+            ++failures
+            half = (56 - result[1].length)/2
+            if half > 0
+                [left, right] = [new Array(half + half%1).join('=') + ' ',
+                           ' ' + new Array(half - half%1).join('=')]
+            else
+                [left, right] = ['', '']
+            wr "#{left}In test #{result[1]}#{right}"
+            wr "#{result[2]}"
+            if result[3] isnt ''
+                wr '------------------------ captured stdout -----------------------'
+                wr result[3]
+         else
+             ++passes
+
+    wr '================================================================'
+    wr((result[0] for result in results).join(''))
+    wr "#{passes} successes, #{failures} failures"
+    wr '================================================================'
+).call(require './docopt')
