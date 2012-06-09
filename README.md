@@ -1,5 +1,3 @@
-TODO: This ruby page should be adopted for CoffeeScript/JavaScript.
-
 `docopt` – command line option parser, that will make you smile
 ===============================================================================
 
@@ -17,7 +15,7 @@ to your code.
 Now you can write an awesome, readable, clean, DRY code like *that*:
 
 ```coffeescript
-doc = "Usage: example.py [options] <arguments>...
+doc = "Usage: example [options] <arguments>...
 
 Options:
   -h --help            show this help message and exit
@@ -39,18 +37,17 @@ Options:
   --testsuite=dir      run regression tests from dir
   --doctest            run doctest on myself"
 
-docopt = require('./docopt').docopt
+docopt = (require 'docopt').docopt
 
 if process.mainModule.id == module.id
     options = docopt(doc, '1.0.0')  # parse options based on doc above
     console.log options['--verbose']
-end
 ```
 
 Hell yeah! The option parser is generated based on `doc` string above, that you
 pass to the `docopt` function.
 
-API `require './docopt'`
+API `require 'docopt'`
 ===============================================================================
 
 ###`options = docopt(doc, argv=process.argv[1..], help=true, version=null)`
@@ -63,7 +60,7 @@ the option parser.  The simple rules of how to write such a docstring
 (in order to generate option parser from it successfully) are given in the next
 section. Here is a quick example of such a string:
 
-        Usage: your_program.py [options]
+        Usage: your_program [options]
 
         -h --help     Show this.
         -v --verbose  Print more text.
@@ -80,7 +77,7 @@ are encountered. After showing the usage-message, the program will terminate.
 If you want to handle `-h` or `--help` options manually (as all other options),
 set `help=false`.
 
-- `version`, by default `nil`, is an optional argument that specifies the
+- `version`, by default `null`, is an optional argument that specifies the
 version of your program. If supplied, then, if the parser encounters
 `--version` option, it will print the supplied version and terminate.
 `version` could be any printable object, but most likely a string,
@@ -90,26 +87,26 @@ Note, when `docopt` is set to automatically handle `-h`, `--help` and
 `--version` options, you still need to mention them in the options description
 (`doc`) for your users to know about them.
 
-The **return** value is a hash with option values
+The **return** value is an Object with properties
 (giving long options precedence), e.g:
 
-    {"--benchmark"=>true,
-     "--count"=>true,
-     "--doctest"=>false,
-     "--exclude"=>".svn,CVS,.bzr,.hg,.git",
-     "--filename"=>"*.py",
-     "--help"=>false,
-     "--ignore"=>false,
-     "--quiet"=>false,
-     "--repeat"=>false,
-     "--select"=>"*.rb",
-     "--show-source"=>true,
-     "--statistics"=>true,
-     "--testsuite"=>false,
-     "--verbose"=>true,
-     "--version"=>false}
+    {"--benchmark": true,
+     "--count": true,
+     "--doctest": false,
+     "--exclude": ".svn,CVS,.bzr,.hg,.git",
+     "--filename": "*.coffee",
+     "--help": false,
+     "--ignore": false,
+     "--quiet": false,
+     "--repeat": false,
+     "--select": "*.coffee",
+     "--show-source": true,
+     "--statistics": true,
+     "--testsuite": false,
+     "--verbose": true,
+     "--version": false}
 
-You can access positional arguments in `ARGV`.
+You can access positional arguments in ``.
 
 `doc`-string format for your usage-message
 ===============================================================================
@@ -159,18 +156,18 @@ Compatibility notice:
 ===============================================================================
 
 In order to maintain your program's compatibility with future versions
-of `docopt.rb` (as porting more features continues) you are recommended to
+of `docopt.coffee` (as porting more features continues) you are recommended to
 keep the following in the begining of `doc` argument:
 
-    Usage: my_program.rb [options] <arguments>...
+    Usage: my_program [options] <arguments>...
 
 or
 
-    Usage: my_program.rb [options] <argument>
+    Usage: my_program [options] <argument>
 
 or
 
     Usage: my_program.rb [options]
 
-(followed by an empty line), where you are free to change `my_program.rb`
+(followed by an empty line), where you are free to change `my_program`
 and `argument(s)` name inside of `<...>`.
