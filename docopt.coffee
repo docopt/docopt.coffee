@@ -10,8 +10,19 @@ class DocoptExit extends Error
         process.exit(1)
     @usage: ''
 
-# same as Option class in python
-class Option
+
+class Pattern
+  constructor: (@children) ->
+  valueOf: @toString
+  toString: () ->
+      formals = (child.toString() for child in @children).join(', ')
+      "#{@constructor.name}(#{formals})"
+  flat: () ->
+      if @hasOwnProperty('children')
+          return [@]
+      return (grandchild for grandchild in child.flat() for child in children)
+
+class Option extends Pattern
     constructor: (@short=null, @long=null, @argcount=0, @value=false) ->
     toString: -> "Option(#{@short}, #{@long}, #{@argcount}, #{@value})"
     name: -> @long or @short
@@ -36,6 +47,11 @@ class Option
             matched = description.match(/\[default: (.*)\]/)
             value = if matched then matched[1] else false
         new Option(short, long, argcount, value)
+
+
+class Required extends Pattern
+    constructor: (children) ->
+        super children
     
 
 # same as TokenStream in python
@@ -47,7 +63,7 @@ class TokenStream extends Array
            else
                source
         @push.apply @, stream
-    move: -> @shift() or null
+    shift: -> [].shift.apply(@) or null
     current: -> @[0] or null
     toString: -> ([].slice.apply @).toString()
     join: (glue) -> ([].join.apply @, glue)
@@ -56,7 +72,7 @@ class TokenStream extends Array
 
 
 parse_shorts = (tokens, options) ->
-    raw = tokens.move()[1..]
+    raw = tokens.shift()[1..]
     parsed = []
     while raw != ''
         opt = (o for o in options when o.short and o.short[1] == raw[0])
@@ -72,7 +88,7 @@ parse_shorts = (tokens, options) ->
             if raw == ''
                 if tokens.current() is null
                     tokens.error "-#{opt.short[0]} requires argument"
-                raw = tokens.move()
+                raw = tokens.shift()
             [value, raw] = [raw, '']
         opt.value = value
         parsed.push(opt)
@@ -82,7 +98,7 @@ parse_shorts = (tokens, options) ->
 parse_long = (tokens, options) ->
     [_, raw, value] = tokens.current().match(/(.*?)=(.*)/) ? [null,
                                                       tokens.current(), '']
-    tokens.move()
+    tokens.shift()
     value = if value == '' then null else value
     opt = (o for o in options when o.long and o.long[0...raw.length] == raw)
     if opt.length < 1
@@ -94,7 +110,7 @@ parse_long = (tokens, options) ->
         if value is null
             if tokens.current() is null
                 tokens.error "#{opt.name} requires argument"
-            value = tokens.move()
+            value = tokens.shift()
     else if value is not null
         tokens.error "#{opt.name} must not have an argument"
     opt.value = value or true
@@ -181,7 +197,7 @@ parse_args = (source, options) ->
     [opts, args] = [[], []]
     while not (tokens.current() is null)
         if tokens.current() == '--'
-            tokens.move()
+            tokens.shift()
             args = args.concat(tokens)
             break
         else if tokens.current()[0...2] == '--'
@@ -189,7 +205,7 @@ parse_args = (source, options) ->
         else if tokens.current()[0] == '-' and tokens.current() != '-'
             opts = opts.concat(parse_shorts(tokens, options))
         else
-            args.push(tokens.move())
+            args.push(tokens.shift())
     return [opts, args]
 
 parse_doc_options = (doc) ->
