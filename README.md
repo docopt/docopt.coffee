@@ -167,7 +167,7 @@ or
 
 or
 
-    Usage: my_program.rb [options]
+    Usage: my_program [options]
 
 (followed by an empty line), where you are free to change `my_program`
 and `argument(s)` name inside of `<...>`.
