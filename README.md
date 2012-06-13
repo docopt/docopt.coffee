@@ -37,7 +37,7 @@ Options:
   --testsuite=dir      run regression tests from dir
   --doctest            run doctest on myself"
 
-docopt = (require 'docopt').docopt
+{docopt} = require 'docopt'
 
 if process.mainModule.id == module.id
     options = docopt(doc, '1.0.0')  # parse options based on doc above
@@ -50,7 +50,7 @@ pass to the `docopt` function.
 API `require 'docopt'`
 ===============================================================================
 
-###`options = docopt(doc, argv=process.argv[1..], help=true, version=null)`
+###`options = docopt(doc, {argv: process.argv[1..], help: true, version: null})`
 
 `docopt` takes 1 required and 3 optional arguments:
 
