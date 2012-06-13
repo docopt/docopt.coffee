@@ -285,7 +285,7 @@ parse_shorts = (tokens, options) ->
             tokens.error "-#{raw[0]} is specified ambiguously #{opt.length} times"
         if opt.length < 1
             tokens.error "-#{raw[0]} is not recognized"
-        opt = Object.create(opt[0]) #####copy?  opt = copy(opt[0])
+        opt = Object.create opt[0] #####copy?  opt = copy(opt[0])
         raw = raw[1..]
         if opt.argcount == 0
             value = true
@@ -310,7 +310,7 @@ parse_long = (tokens, options) ->
         tokens.error "-#{raw} is not recognized"
     if opt.length > 1
         tokens.error "-#{raw} is not a unique prefix"  # TODO report ambiguity
-    opt = opt[0]  #copy? opt = copy(opt[0])
+    opt = Object.create opt[0]  #copy? opt = copy(opt[0])
     if opt.argcount == 1
         if value is null
             if tokens.current() is null
@@ -467,7 +467,6 @@ docopt = (doc, kwargs={}) ->
 
     extras help, version, options, doc
     formal_pattern   = parse_pattern formal_usage(usage), pot_options
-    print formal_pattern.flat()
     pot_arguments = (a for a in formal_pattern.flat() \
         when a.constructor in [Argument, Command])
     [matched, left, argums] = formal_pattern.fix().match argv
