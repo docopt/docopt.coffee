@@ -22,5 +22,5 @@ Options:
 
 {docopt} = require('docopt')
 
-options = docopt(doc, null, true, '1.0.0')  # parse options based on doc above
+options = docopt(doc, {help: true, version: '1.0.0'})  # parse options based on doc above
 
