@@ -79,32 +79,82 @@ setup()
 `with (require('./docopt')) { //`
 
 test "Option.parse", ->
-    eq Option.parse('-h'), new Option('-h', null)
-    eq Option.parse('-h'), new Option('-h', null)
-    eq Option.parse('--help'), new Option(null, '--help')
-    eq Option.parse('-h --help'), new Option('-h', '--help')
-    eq Option.parse('-h, --help'), new Option('-h', '--help')
+    eq(
+        Option.parse('-h')
+        new Option('-h', null)
+    )
+    eq(
+        Option.parse('-h')
+        new Option('-h', null)
+    )
+    eq(
+        Option.parse '--help'
+        new Option null, '--help'
+    )
+    eq(
+        Option.parse '-h --help'
+        new Option '-h', '--help'
+    )
+    eq(
+        Option.parse '-h, --help'
+        new Option '-h', '--help'
+    )
     
-    eq Option.parse('-h TOPIC'), new Option('-h', null, 1)
-    eq Option.parse('--help TOPIC'), new Option(null, '--help', 1)
-    eq Option.parse('-h TOPIC --help TOPIC'), new Option('-h', '--help', 1)
-    eq Option.parse('-h TOPIC, --help TOPIC'), new Option('-h', '--help', 1)
-    eq Option.parse('-h TOPIC, --help=TOPIC'), new Option('-h', '--help', 1)
+    eq(
+        Option.parse '-h TOPIC'
+        new Option '-h', null, 1
+    )
+    eq(
+        Option.parse '--help TOPIC'
+        new Option null, '--help', 1
+    )
+    eq(
+        Option.parse '-h TOPIC --help TOPIC'
+        new Option '-h', '--help', 1
+    )
+    eq(
+        Option.parse '-h TOPIC, --help TOPIC'
+        new Option '-h', '--help', 1
+    )
+    eq(
+        Option.parse '-h TOPIC, --help=TOPIC'
+        new Option '-h', '--help', 1
+    )
     
-    eq Option.parse('-h  Description...'), new Option('-h', null)
-    eq Option.parse('-h --help  Description...'), new Option('-h', '--help')
-    eq Option.parse('-h TOPIC  Description...'), new Option('-h', null, 1)
+    eq(
+        Option.parse '-h  Description...'
+        new Option '-h', null
+    )
+    eq(
+        Option.parse '-h --help  Description...'
+        new Option '-h', '--help'
+    )
+    eq(
+        Option.parse '-h TOPIC  Description...'
+        new Option '-h', null, 1
+    )
 
-    eq Option.parse('    -h'), new Option('-h', null)
+    eq(
+        Option.parse '    -h'
+        new Option '-h', null
+    )
 
-    eq Option.parse('-h TOPIC  Descripton... [default: 2]'),
-           new Option('-h', null, 1, '2')
-    eq Option.parse('-h TOPIC  Descripton... [default: topic-1]'),
-           new Option('-h', null, 1, 'topic-1')
-    eq Option.parse('--help=TOPIC  ... [default: 3.14]'),
-           new Option(null, '--help', 1, '3.14')
-    eq Option.parse('-h, --help=DIR  ... [default: ./]'),
-           new Option('-h', '--help', 1, "./")
+    eq(
+        Option.parse '-h TOPIC  Descripton... [default: 2]'
+        new Option '-h', null, 1, '2'
+    )
+    eq(
+        Option.parse '-h TOPIC  Descripton... [default: topic-1]'
+        new Option '-h', null, 1, 'topic-1'
+    )
+    eq(
+        Option.parse '--help=TOPIC  ... [default: 3.14]'
+        new Option null, '--help', 1, '3.14'
+    )
+    eq(
+        Option.parse '-h, --help=DIR  ... [default: ./]'
+        new Option '-h', '--help', 1, "./"
+    )
     
 test "TokenStream", ->
     eq new TokenStream(['-o', 'arg']), ['-o', 'arg']
@@ -113,27 +163,83 @@ test "TokenStream", ->
     eq new TokenStream('-o arg').current(), '-o'
         
 test "parse_shorts", ->
-    eq(parse_shorts(new TokenStream('-a'), [new Option('-a')]),
-        [new Option('-a', null, 0, true)])
-    eq(parse_shorts(new TokenStream('-ab'), [new Option('-a'), new Option('-b')]),
-        [new Option('-a', null, 0, true), new Option('-b', null, 0, true)])
-    eq(parse_shorts(new TokenStream('-b'), [new Option('-a'), new Option('-b')]),
-        [new Option('-b', null, 0, true)])
-    eq(parse_shorts(new TokenStream('-aARG'), [new Option('-a', null, 1)]),
-        [new Option('-a', null, 1, 'ARG')])
-    eq(parse_shorts(new TokenStream('-a ARG'), [new Option('-a', null, 1)]),
-        [new Option('-a', null, 1, 'ARG')])
+    eq(
+        parse_shorts(
+            new TokenStream '-a'
+            [new Option '-a']
+        )
+        [new Option '-a', null, 0, true]
+    )
+    eq(
+        parse_shorts(
+            new TokenStream '-ab'
+            [
+                new Option '-a'
+                new Option '-b'
+            ]
+        )
+        [
+            new Option '-a', null, 0, true
+            new Option '-b', null, 0, true
+        ]
+    )
+    eq(
+        parse_shorts(
+            new TokenStream '-b'
+            [
+                new Option '-a'
+                new Option '-b'
+            ]
+        )
+        [new Option '-b', null, 0, true]
+    )
+    eq(
+        parse_shorts(
+            new TokenStream '-aARG'
+            [new Option '-a', null, 1]
+        )
+        [new Option '-a', null, 1, 'ARG']
+    )
+    eq(
+        parse_shorts(
+            new TokenStream '-a ARG'
+            [new Option '-a', null, 1]
+        )
+        [new Option '-a', null, 1, 'ARG']
+    )
     
 test "parse_long", ->
-    eq(parse_long(new TokenStream('--all'), [new Option(null, '--all')]),
-        [new Option(null, '--all', 0, true)])
-    eq(parse_long(new TokenStream('--all'), [new Option(null, '--all'),
-                                          new Option(null, '--not')]),
-        [new Option(null, '--all', 0, true)])
-    eq(parse_long(new TokenStream('--all=ARG'), [new Option(null, '--all', 1)]),
-        [new Option(null, '--all', 1, 'ARG')])
-    eq(parse_long(new TokenStream('--all ARG'), [new Option(null, '--all', 1)]),
-        [new Option(null, '--all', 1, 'ARG')])
+    eq(
+        parse_long(
+            new TokenStream '--all'
+            [new Option null, '--all']
+        )
+        [new Option null, '--all', 0, true]
+    )
+    eq(
+        parse_long(
+            new TokenStream '--all'
+            [
+                new Option null, '--all'
+                new Option null, '--not'
+            ]
+        )
+        [new Option null, '--all', 0, true]
+    )
+    eq(
+        parse_long(
+            new TokenStream '--all=ARG'
+            [new Option null, '--all', 1]
+        )
+        [new Option null, '--all', 1, 'ARG']
+    )
+    eq(
+        parse_long(
+            new TokenStream '--all ARG'
+            [new Option null, '--all', 1]
+        )
+        [new Option null, '--all', 1, 'ARG']
+    )
     
 test "parse_args", ->
     test_options = [new Option(null, '--all'), new Option('-b'), new Option('-W', null, 1)]
@@ -191,9 +297,14 @@ test "parse_doc_options", ->
     doc = '''-h, --help  Print help message.
     -o FILE     Output file.
     --verbose   Verbose mode.'''
-    eq parse_doc_options(doc), [new Option('-h', '--help'),
-                                  new Option('-o', null, 1),
-                                  new Option(null, '--verbose')]
+    eq(
+        parse_doc_options doc
+        [
+            new Option '-h', '--help'
+            new Option '-o', null, 1
+            new Option null, '--verbose'
+        ]
+    )
 
 
 test "printable_and_formal_usage", ->
@@ -259,11 +370,13 @@ test "parse_args2", ->
 
 
 test "parse_pattern", ->
-    o = [new Option('-h'),
-         new Option('-v', '--verbose'),
-         new Option('-f', '--file', 1)]
+    o = [
+        new Option '-h'
+        new Option '-v', '--verbose'
+        new Option '-f', '--file', 1
+    ]
     eq(
-        parse_pattern('[ -h ]', o),
+        parse_pattern('[ -h ]', o)
         new Required [
             new Optional [
                 new Option '-h', null, 0, true
@@ -512,29 +625,122 @@ test "basic_pattern_matching", ->
     )
 
 test "pattern_any_option", ->
-    eq new AnyOptions().match([new Option('-a')]), [true, [], []]
-    eq new AnyOptions().match([new Option('-b')]), [true, [], []]
-    eq new AnyOptions().match([new Option('-l', '--long')]), [true, [], []]
-    eq new AnyOptions().match([new Option(null, '--long')]), [true, [], []]
-    eq new AnyOptions().match([new Option('-a'), new Option('-b')]), [true, [], []]
-    eq new AnyOptions().match([new Option('-a'),
-                               new Option(null, '-long')]), [true, [], []]
+    eq(
+        new AnyOptions().match [
+            new Option '-a'
+        ]
+        [true, [], []]
+    )
+    eq(
+        new AnyOptions().match [
+            new Option '-b'
+        ]
+        [true, [], []]
+    )
+    eq(
+        new AnyOptions().match [
+            new Option '-l', '--long'
+        ]
+        [true, [], []]
+    )
+    eq(
+        new AnyOptions().match [
+            new Option null, '--long'
+        ]
+        [true, [], []]
+    )
+    eq(
+        new AnyOptions().match [
+            new Option '-a'
+            new Option '-b'
+        ]
+        [true, [], []]
+    )
+    eq(
+        new AnyOptions().match [
+            new Option '-a'
+            new Option null, '-long'
+        ]
+        [true, [], []]
+    )
     #eq not new AnyOptions().match([new Argument('N')])[0]
 
 
 test "pattern_either", ->
-    eq new Option('-a').either(), new Either([new Required([new Option('-a')])])
-    eq new Argument('A').either(), new Either([new Required([new Argument('A')])])
-    eq new Required([new Either([new Option('-a'), new Option('-b')]), new Option('-c')]).either(),\
-            new Either([new Required([new Option('-a'), new Option('-c')]),
-                   new Required([new Option('-b'), new Option('-c')])])
-    eq new Optional([new Option('-a'), new Either([new Option('-b'), new Option('-c')])]).either(),\
-            new Either([new Required([new Option('-b'), new Option('-a')]),
-                   new Required([new Option('-c'), new Option('-a')])])
-    eq new Either([new Option('-x'), new Either([new Option('-y'), new Option('-z')])]).either(), \
-            new Either([new Required([new Option('-x')]),
-                   new Required([new Option('-y')]),
-                   new Required([new Option('-z')])])
+    eq(
+        new Option('-a').either()
+        new Either [
+            new Required [
+                new Option '-a'
+            ]
+        ]
+    )
+    eq(
+        new Argument('A').either()
+        new Either [
+            new Required [
+                new Argument 'A'
+            ]
+        ]
+    )
+    eq(
+        new Required([
+            new Either [
+                new Option '-a'
+                new Option '-b'
+            ]
+            new Option '-c'
+        ]).either()
+        new Either [
+            new Required [
+                new Option '-a'
+                new Option '-c'
+            ]
+            new Required [
+                new Option '-b'
+                new Option '-c'
+            ]
+        ]
+    )
+    eq(
+        new Optional([
+            new Option '-a'
+            new Either [
+                new Option '-b'
+                new Option '-c'
+            ]
+        ]).either()
+        new Either [
+            new Required [
+                new Option '-b'
+                new Option '-a'
+            ]
+            new Required [
+                new Option '-c'
+                new Option '-a'
+            ]
+        ]
+    )
+    eq(
+        new Either([
+            new Option '-x'
+            new Either [
+                new Option '-y'
+                new Option '-z'
+            ]
+        ]).either()
+        new Either [
+            new Required [
+                new Option '-x'
+            ]
+            new Required [
+                new Option '-y'
+            ]
+            new Required [
+                new Option '-z'
+            ]
+        ]
+    )
     eq(
         new OneOrMore([
             new Argument 'N'
@@ -587,7 +793,10 @@ test "pattern_fix_list_arguments", ->
 
 
 test "pattern_fix_identities_1", ->
-    pattern = new Required([new Argument('N'), new Argument('N')])
+    pattern = new Required [
+        new Argument 'N'
+        new Argument 'N'
+    ]
     eq pattern.children[0], pattern.children[1]
     #pattern.children[0] isnt pattern.children[1]
     #pattern.fix_identities()
@@ -595,7 +804,13 @@ test "pattern_fix_identities_1", ->
 
 
 test "pattern_fix_identities_2", ->
-    pattern = new Required([new Optional([new Argument('X'), new Argument('N')]), new Argument('N')])
+    pattern = new Required [
+        new Optional [
+            new Argument 'X'
+            new Argument 'N'
+        ]
+        new Argument 'N'
+    ]
     eq pattern.children[0].children[1], pattern.children[1]
     #assert pattern.children[0].children[1] is not pattern.children[1]
     #pattern.fix_identities()
@@ -645,20 +860,49 @@ test "pattern_fix_identities_2", ->
 
 
 test "allow_double_underscore_in_pattern", ->
-    eq docopt('usage: prog [-o] [--] <arg>\n\n-o',
-           {'argv': '-- -o'}), new Dict([['-o', false], ['<arg>', '-o']])
+    eq(
+        docopt(
+            'usage: prog [-o] [--] <arg>\n\n-o',
+            'argv': '-- -o'
+        )
+        new Dict [
+            ['-o', false]
+            ['<arg>', '-o']
+        ]
+    )
 
 
 test "allow_empty_pattern", ->
-    docopt('usage: prog', {'argv': ' '})
+    docopt(
+        'usage: prog'
+        argv: ' '
+    )
 
 
 test "docopt", ->
     doc = '''Usage: prog [-v] A
 
     -v  Be verbose.'''
-    #eq docopt(doc, {'argv': 'arg'}), new Dict([['-v', false], ['A', 'arg']])
-    eq docopt(doc, {'argv': '-v arg'}), new Dict([['-v', true], ['A', 'arg']])
+    eq(
+        docopt(
+            doc
+            argv: 'arg'
+        )
+        new Dict [
+            ['-v', false]
+            ['A', 'arg']
+        ]
+    )
+    eq(
+        docopt(
+            doc
+            argv: '-v arg'
+        )
+        new Dict [
+            ['-v', true]
+            ['A', 'arg']
+        ]
+    )
 
     doc = """Usage: prog [-vqr] [FILE]
               prog INPUT OUTPUT
@@ -668,20 +912,47 @@ test "docopt", ->
       -v        print status messages
       -q        report only file names [default: true]
       -r        show all occurrences of the same error
-      --help
+      --help    show this help
 
     """
-#    a = docopt(doc, '-v file.py')
-#    eq a, {'-v': true, '-q': true, '-r': null, '--help': null,
-#                 'FILE': 'file.py', 'INPUT': null, 'OUTPUT': null}
+    eq(
+        docopt(doc, argv: '-v file.py')
+        new Dict [
+            ['-v', true]
+            ['-q', false]
+            ['-r', false]
+            ['--help', false]
+            ['FILE', 'file.py']
+            ['INPUT', false]
+            ['OUTPUT', false]
+        ]
+    )
 
-#    a = docopt(doc, '-v')
-#    eq a, {'-v': true, '-q': true, '-r': null, '--help': null,
-#                 'FILE': null, 'INPUT': null, 'OUTPUT': null}
+    eq(
+        docopt(doc, argv: '-v')
+        new Dict [
+            ['-v', true]
+            ['-q', false]
+            ['-r', false]
+            ['--help', false]
+            ['FILE', false]
+            ['INPUT', false]
+            ['OUTPUT', false]
+        ]
+    )
 
-#    a = docopt(doc, '-q')
-#    eq a, {'-v': null, '-q': false, '-r': null, '--help': null,
-#                 'FILE': null, 'INPUT': null, 'OUTPUT': null}
+    eq(
+        docopt(doc, argv: '-q')
+        new Dict [
+            ['-v', false]
+            ['-q', true]
+            ['-r', false]
+            ['--help', false]
+            ['FILE', false]
+            ['INPUT', false]
+            ['OUTPUT', false]
+        ]
+    )
 
 #    with raises(DocoptExit):  # does not match
 #        docopt(doc, '-v input.py output.py')
@@ -689,7 +960,7 @@ test "docopt", ->
 #    with raises(DocoptExit):
 #        docopt(doc, '--fake')
 #
-#    with raises(SystemExit):
+#    with raises(DocoptExit):
 #        docopt(doc, '--hel')
 
     #with raises(SystemExit):
@@ -698,8 +969,24 @@ test "docopt", ->
 
 test "bug_not_list_argument_if_nothing_matched", ->
     d = 'usage: prog [NAME [NAME ...]]'
-#    eq docopt(d, 'a b'), {'NAME': ['a', 'b']}
-#    eq docopt(d, ''), {'NAME': []}
+    eq(
+        docopt(
+            d
+            argv: 'a b'
+        )
+        new Dict [
+            ['NAME', ['a', 'b']]
+        ]
+    )
+    eq(
+        docopt(
+            d
+            argv: ' '
+        )
+        new Dict [
+            ['NAME', []]
+        ]
+    )
 
 
 test "option_arguments_default_to_none", ->
@@ -709,7 +996,16 @@ test "option_arguments_default_to_none", ->
     -m <msg>  Message
 
     """
-#    eq docopt(d, '-a'), {'-m': null, '-a': true}
+    eq(
+        docopt(
+            d
+            argv: '-a'
+        )
+        new Dict [
+            ['-m', false]
+            ['-a', true]
+        ]
+    )
 
 `}`
 
