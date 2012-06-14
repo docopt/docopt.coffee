@@ -364,6 +364,7 @@ test "parse_args2", ->
         [
             new Option '-h', null, 0, true
             new Argument null, 'arg'
+            new Argument null, '--'
             new Argument null, '-v'
         ]
     )
@@ -866,6 +867,7 @@ test "allow_double_underscore_in_pattern", ->
             'argv': '-- -o'
         )
         new Dict [
+            ['--', true]
             ['-o', false]
             ['<arg>', '-o']
         ]
