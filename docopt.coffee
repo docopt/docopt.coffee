@@ -26,7 +26,7 @@ class Pattern
         formals = @children.join ', '
         "#{@constructor.name}(#{formals})"
 
-    match: -> throw new Error("""classes inheriting from Pattern 
+    match: -> throw new Error("""classes inheriting from Pattern
                                  must overload the match method""")
 
     flat: ->
@@ -206,7 +206,7 @@ class Required extends Pattern
             if not matched
                 return [false, left, collected]
         [true, l, c]
-    
+
 
 class Optional extends Pattern
 
@@ -368,7 +368,7 @@ parse_atom = (tokens, options) ->
     result = []
     if token is '('
         tokens.shift()
-        
+
         result = [new Required parse_expr tokens, options]
         if tokens.shift() != ')'
             raise tokens.error "Unmatched '('"
@@ -452,7 +452,7 @@ docopt = (doc, kwargs={}) ->
         when arg not in allowedargs
 
     argv    = if kwargs.argv is undefined \
-              then process.argv[1..] else kwargs.argv
+              then process.argv[2..] else kwargs.argv
     name    = if kwargs.name is undefined \
               then null else kwargs.name
     help    = if kwargs.help is undefined \
@@ -467,7 +467,7 @@ docopt = (doc, kwargs={}) ->
 
     extras help, version, options, doc
     formal_pattern   = parse_pattern formal_usage(usage), pot_options
-    print formal_pattern.flat()
+
     pot_arguments = (a for a in formal_pattern.flat() \
         when a.constructor in [Argument, Command])
     [matched, left, argums] = formal_pattern.fix().match argv
@@ -496,4 +496,3 @@ module.exports =
     parse_shorts : parse_shorts
     parse_args   : parse_args
     printable_usage: printable_usage
-
