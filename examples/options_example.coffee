@@ -19,7 +19,7 @@ Options:
   --exclude=PATTERNS   exclude files or directories which match these comma
                        separated patterns [default: .svn,CVS,.bzr,.hg,.git]
   -f NAME --file=NAME  when parsing directories, only check filenames matching
-                       these comma separated patterns [default: *.py]
+                       these comma separated patterns [default: *.coffee]
   --select=ERRORS      select errors and warnings (e.g. E,W6)
   --ignore=ERRORS      skip errors and warnings (e.g. E4,W)
   --show-source        show source code for each error

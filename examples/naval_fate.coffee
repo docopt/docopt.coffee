@@ -2,7 +2,7 @@ doc = """Naval Fate.
 
 Usage:
   naval_fate.coffee ship new <name>...
-  naval_fate.coffee ship [<name>] move <x> <y> [--speed=<kn>]
+  naval_fate.coffee ship <name> move <x> <y> [--speed=<kn>]
   naval_fate.coffee ship shoot <x> <y>
   naval_fate.coffee mine (set|remove) <x> <y> [--moored|--drifting]
   naval_fate.coffee -h | --help
