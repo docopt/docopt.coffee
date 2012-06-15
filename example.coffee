@@ -20,7 +20,7 @@ Options:
   --testsuite=dir      run regression tests from dir
   --doctest            run doctest on myself"
 
-docopt = require('./docopt').docopt
+{docopt} = require('docopt')
 
-options = docopt(doc, void 0, true, '1.0.0')  # parse options based on doc above
+options = docopt(doc, {help: true, version: '1.0.0'})  # parse options based on doc above
 

@@ -3,7 +3,7 @@ print = -> console.log [].join.call arguments, ' '
 atos = Array.prototype.toString
 Array.prototype.toString = -> '[' + atos.call(@) + ']'
 
-class UsageMessageError extends Error
+class DocoptLanguageError extends Error
     constructor: (@message) ->
         print @message
 
@@ -273,8 +273,6 @@ class TokenStream extends Array
 
     join: (glue) -> ([].join.apply @, glue)
 
-    error: (message) -> throw new @error message
-
 
 parse_shorts = (tokens, options) ->
     raw = tokens.shift()[1..]
@@ -284,15 +282,22 @@ parse_shorts = (tokens, options) ->
         if opt.length > 1
             tokens.error "-#{raw[0]} is specified ambiguously #{opt.length} times"
         if opt.length < 1
-            tokens.error "-#{raw[0]} is not recognized"
-        opt = Object.create(opt[0]) #####copy?  opt = copy(opt[0])
+            if tokens.error is DocoptExit
+                throw new tokens.error "-#{raw[0]} is not recognized"
+            else
+                o = new Option('-' + raw[0], None)
+                options.append(o)
+                parsed.append(o)
+                raw = raw[1..]
+                continue
+        opt = Object.create opt[0]
         raw = raw[1..]
         if opt.argcount == 0
             value = true
         else
             if raw in ['', null]
                 if tokens.current() is null
-                    tokens.error "-#{opt.short[0]} requires argument"
+                    throw new tokens.error "-#{opt.short[0]} requires argument"
                 raw = tokens.shift()
             [value, raw] = [raw, '']
         opt.value = value
@@ -302,15 +307,20 @@ parse_shorts = (tokens, options) ->
 
 parse_long = (tokens, options) ->
     [_, raw, value] = tokens.current().match(/(.*?)=(.*)/) ? [null,
-                                                      tokens.current(), '']
+                                                tokens.current(), '']
     tokens.shift()
     value = if value == '' then null else value
     opt = (o for o in options when o.long and o.long[0...raw.length] == raw)
-    if opt.length < 1
-        tokens.error "-#{raw} is not recognized"
     if opt.length > 1
-        tokens.error "-#{raw} is not a unique prefix"  # TODO report ambiguity
-    opt = opt[0]  #copy? opt = copy(opt[0])
+        throw new tokens.error "#{raw} is specified ambiguously #{opt.length} times"
+    if opt.length < 1
+        if tokens.error is DocoptExit
+            throw new tokens.error "#{raw} is not recognized"
+        else
+            o = new Option(None, '-' + raw, 0 + !!value)
+            options.append(o)
+            return [o]
+    opt = Object.create opt[0]
     if opt.argcount == 1
         if value is null
             if tokens.current() is null
@@ -324,7 +334,7 @@ parse_long = (tokens, options) ->
 
 parse_pattern = (source, options) ->
     tokens = new TokenStream source.replace(/([\[\]\(\)\|]|\.\.\.)/g, ' $1 '),
-                         UsageMessageError
+                         DocoptLanguageError
     result = parse_expr tokens, options
     if tokens.current() is not null
         raise tokens.error 'unexpected ending: ' + tokens.join ' '
@@ -383,12 +393,12 @@ parse_atom = (tokens, options) ->
         if tokens.shift() != ']'
             raise tokens.error "Unmatched '['"
         result
-    else if token is '--'
-        tokens.shift()
-        []  # allow "usage: prog [-o] [--] <arg>"
     else if token[0..1] is '--'
-        parse_long tokens, options
-    else if token[0] is '-'
+        if token is '--'
+            [new Command tokens.shift()]
+        else
+            parse_long tokens, options
+    else if token[0] is '-' and token isnt '-'
         parse_shorts tokens, options
     else if (token[0] is '<' and token[token.length-1] is '>') \
       or /^[^a-z]*$/.test token
@@ -398,14 +408,13 @@ parse_atom = (tokens, options) ->
 
 
 parse_args = (source, options) ->
-    tokens = new TokenStream source
+    tokens = new TokenStream source, DocoptExit
     #options = options.slice(0) # shallow copy, not sure if necessary
     opts = []
     while (token = tokens.current()) isnt null
         if token is '--'
-            tokens.shift()
-            opts = opts.concat(new Argument null, tokens.shift() while tokens.length)
-            break
+            #tokens.shift()
+            return opts.concat(new Argument null, tokens.shift() while tokens.length)
         else if token[0...2] is '--'
             long = parse_long tokens, options
             opts = opts.concat long
@@ -420,7 +429,12 @@ parse_doc_options = (doc) ->
     (Option.parse('-' + s) for s in doc.split(/^ *-|\n *-/)[1..])
 
 printable_usage = (doc, name) ->
-    return doc.split(/(usage:)/i)[1..].join('').split(/\n\s*\n/)[0].replace(/^\s+|\s+$/, '')
+    usage_split = doc.split(/(usage:)/i)
+    if usage_split.length < 3
+        throw new DocoptLanguageError '"usage:" (case-insensitive) not found.'
+    else if usage_split.length > 3
+        throw new DocoptLanguageError 'More than one "usage:" (case-insensitive).'
+    return usage_split[1..].join('').split(/\n\s*\n/)[0].replace(/^\s+|\s+$/, '')
 
 formal_usage = (printable_usage) ->
     pu = printable_usage.split(/\s+/)[1..]  # split and drop "usage:"
@@ -462,16 +476,15 @@ docopt = (doc, kwargs={}) ->
 
     usage = printable_usage doc, name
     pot_options = parse_doc_options doc
-    argv = parse_args argv, pot_options
-    options = (opt for opt in argv when opt.constructor is Option)
-
-    extras help, version, options, doc
     formal_pattern   = parse_pattern formal_usage(usage), pot_options
 
-    pot_arguments = (a for a in formal_pattern.flat() \
-        when a.constructor in [Argument, Command])
+    argv = parse_args argv, pot_options
+    extras help, version, argv, doc
     [matched, left, argums] = formal_pattern.fix().match argv
     if matched and left.length is 0  # better message if left?
+        options = (opt for opt in argv when opt.constructor is Option)
+        pot_arguments = (a for a in formal_pattern.flat() \
+            when a.constructor in [Argument, Command])
         parameters = [].concat pot_options, options, pot_arguments, argums
         return new Dict([a.name(), a.value] for a in parameters)
     throw new DocoptExit usage
