@@ -466,7 +466,7 @@ docopt = (doc, kwargs={}) ->
         when arg not in allowedargs
 
     argv    = if kwargs.argv is undefined \
-              then process.argv[1..] else kwargs.argv
+              then process.argv[2..] else kwargs.argv
     name    = if kwargs.name is undefined \
               then null else kwargs.name
     help    = if kwargs.help is undefined \
@@ -487,7 +487,6 @@ docopt = (doc, kwargs={}) ->
             when a.constructor in [Argument, Command])
         parameters = [].concat pot_options, options, pot_arguments, argums
         return new Dict([a.name(), a.value] for a in parameters)
-    print matched, left, argums, argv, pot_options, formal_pattern
     throw new DocoptExit usage
 
 module.exports =

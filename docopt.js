@@ -923,7 +923,7 @@
         throw new Error("unrecognized argument to docopt: ");
       }
     }
-    argv = kwargs.argv === void 0 ? process.argv.slice(1) : kwargs.argv;
+    argv = kwargs.argv === void 0 ? process.argv.slice(2) : kwargs.argv;
     name = kwargs.name === void 0 ? null : kwargs.name;
     help = kwargs.help === void 0 ? true : kwargs.help;
     version = kwargs.version === void 0 ? null : kwargs.version;
@@ -968,7 +968,6 @@
         return _results;
       })());
     }
-    print(matched, left, argums, argv, pot_options, formal_pattern);
     throw new DocoptExit(usage);
   };
 
