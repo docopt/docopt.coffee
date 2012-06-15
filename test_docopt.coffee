@@ -99,7 +99,7 @@ test "Option.parse", ->
         Option.parse '-h, --help'
         new Option '-h', '--help'
     )
-    
+
     eq(
         Option.parse '-h TOPIC'
         new Option '-h', null, 1
@@ -120,7 +120,7 @@ test "Option.parse", ->
         Option.parse '-h TOPIC, --help=TOPIC'
         new Option '-h', '--help', 1
     )
-    
+
     eq(
         Option.parse '-h  Description...'
         new Option '-h', null
@@ -155,13 +155,13 @@ test "Option.parse", ->
         Option.parse '-h, --help=DIR  ... [default: ./]'
         new Option '-h', '--help', 1, "./"
     )
-    
+
 test "TokenStream", ->
     eq new TokenStream(['-o', 'arg']), ['-o', 'arg']
     eq new TokenStream('-o arg'), ['-o', 'arg']
     eq new TokenStream('-o arg').shift(), '-o'
     eq new TokenStream('-o arg').current(), '-o'
-        
+
 test "parse_shorts", ->
     eq(
         parse_shorts(
@@ -207,7 +207,7 @@ test "parse_shorts", ->
         )
         [new Option '-a', null, 1, 'ARG']
     )
-    
+
 test "parse_long", ->
     eq(
         parse_long(
@@ -240,7 +240,7 @@ test "parse_long", ->
         )
         [new Option null, '--all', 1, 'ARG']
     )
-    
+
 test "parse_args", ->
     test_options = [new Option(null, '--all'), new Option('-b'), new Option('-W', null, 1)]
     eq(
@@ -1008,6 +1008,25 @@ test "option_arguments_default_to_none", ->
             ['-a', true]
         ]
     )
+
+
+test "options_without_description", ->
+    eq(docopt('usage: prog --hello', argv: '--hello'),
+       new Dict([['--hello', true]]))
+    eq(docopt('usage: prog [--hello=<world>]', argv: ''),
+       new Dict([['--hello', false]]))  # TODO should be null
+    eq(docopt('usage: prog [--hello=<world>]', argv: '--hello wrld'),
+       new Dict([['--hello', 'wrld']]))
+    eq(docopt('usage: prog [-o]', argv: ''),
+       new Dict([['-o', false]]))
+    eq(docopt('usage: prog [-o]', argv: '-o'),
+       new Dict([['-o', true]]))
+    eq(docopt('usage: prog [-opr]', argv: '-op'),
+       new Dict([['-o', true], ['-p', true], ['-r', false]]))
+    eq(docopt('usage: git [-v | --verbose]', argv: '-v'),
+       new Dict([['-v', true], ['--verbose', false]]))
+    eq(docopt('usage: git remote [-v | --verbose]', argv: 'remote -v'),
+       new Dict([['remote', true], ['-v', true], ['--verbose', false]]))
 
 `}`
 

@@ -285,9 +285,9 @@ parse_shorts = (tokens, options) ->
             if tokens.error is DocoptExit
                 throw new tokens.error "-#{raw[0]} is not recognized"
             else
-                o = new Option('-' + raw[0], None)
-                options.append(o)
-                parsed.append(o)
+                o = new Option('-' + raw[0], null)
+                options.push(o)
+                parsed.push(o)
                 raw = raw[1..]
                 continue
         opt = Object.create opt[0]
@@ -317,8 +317,8 @@ parse_long = (tokens, options) ->
         if tokens.error is DocoptExit
             throw new tokens.error "#{raw} is not recognized"
         else
-            o = new Option(None, '-' + raw, 0 + !!value)
-            options.append(o)
+            o = new Option(null, raw, 0 + !!value)
+            options.push(o)
             return [o]
     opt = Object.create opt[0]
     if opt.argcount == 1
