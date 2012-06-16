@@ -50,7 +50,7 @@ pass to the `docopt` function.
 API `require 'docopt'`
 ===============================================================================
 
-###`options = docopt(doc, {argv: process.argv[1..], help: true, version: null})`
+###`options = docopt(doc, {argv: process.argv[2..], help: true, version: null})`
 
 `docopt` takes 1 required and 3 optional arguments:
 
@@ -68,7 +68,7 @@ section. Here is a quick example of such a string:
         -o FILE       Specify output file [default: ./test.txt].
 
 - `argv` is an optional argument vector; by default it is the argument vector 
-passed to your program (process.argv[1..]). You can supply it with list of 
+passed to your program (process.argv[2..]). You can supply it with list of 
 strings (similar to process.argv) e.g. ['--verbose', '-o', 'hai.txt'].
 
 - `help`, by default `true`, specifies whether the parser should automatically
