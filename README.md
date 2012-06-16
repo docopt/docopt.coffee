@@ -40,7 +40,7 @@ Options:
 {docopt} = require 'docopt'
 
 if process.mainModule.id == module.id
-    options = docopt(doc, '1.0.0')  # parse options based on doc above
+    options = docopt(doc, version: '1.0.0')  # parse options based on doc above
     console.log options['--verbose']
 ```
 
