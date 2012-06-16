@@ -1,64 +1,47 @@
 `docopt` – command line option parser, that will make you smile
 ===============================================================================
 
-Help porting [docopt](http://docopt.org/) to CoffeeScript and JavaScript!
+> [docopt](http://docopt.org/) is a language for description of command-line
+> interfaces. This is `docopt` implementation in CoffeeScript, that could
+> be used for server-sede CoffeeScript and JavaScript programs.
 
-Isn't it awesome how Python's `optparse` and other option parsers generate help and
-usage-messages based on your code?!
+Isn't it awesome how modern command-line arguments parsers generate
+help message based on your code?!
 
 Hell no!  You know what's awesome?  It's when the option parser *is* generated
-based on the help and usage-message that you write in a docstring!  This way
+based on the help message that you write yourself!  This way
 you don't need to write this stupid repeatable parser-code, and instead can
-write a beautiful usage-message (the way you want it!), which adds readability
+write a beautiful help message (the way you want it!), which adds readability
 to your code.
 
 Now you can write an awesome, readable, clean, DRY code like *that*:
 
 ```coffeescript
-doc = "Usage: example [options] <arguments>...
+doc = """
+Usage:
+  quick_example.coffee tcp <host> <port> [--timeout=<seconds>]
+  quick_example.coffee serial <port> [--baud=9600] [--timeout=<seconds>]
+  quick_example.coffee -h | --help | --version
 
-Options:
-  -h --help            show this help message and exit
-  --version            show version and exit
-  -v --verbose         print status messages
-  -q --quiet           report only file names
-  -r --repeat          show all occurrences of the same error
-  --exclude=patterns   exclude files or directories which match these comma
-                       separated patterns [default: .svn,CVS,.bzr,.hg,.git]
-  --filename=patterns  when parsing directories, only check filenames matching
-                       these comma separated patterns [default: *.py]
-  --select=errors      select errors and warnings (e.g. E,W6)
-  --ignore=errors      skip errors and warnings (e.g. E4,W)
-  --show-source        show source code for each error
-  --statistics         count errors and warnings
-  --count              print total number of errors and warnings to standard
-                       error and set exit code to 1 if total is not null
-  --benchmark          measure processing speed
-  --testsuite=dir      run regression tests from dir
-  --doctest            run doctest on myself"
+"""
+{docopt} = require '../docopt'
 
-{docopt} = require 'docopt'
-
-if process.mainModule.id == module.id
-    options = docopt(doc, '1.0.0')  # parse options based on doc above
-    console.log options['--verbose']
+console.log docopt(doc, version: '0.1.1rc')
 ```
 
 Hell yeah! The option parser is generated based on `doc` string above, that you
 pass to the `docopt` function.
 
-API `require 'docopt'`
+API `{docopt} = require 'docopt'`
 ===============================================================================
 
-###`options = docopt(doc, {argv: process.argv[1..], help: true, version: null})`
+###`options = docopt(doc, {argv: process.argv[2..], help: true, version: null})`
 
-`docopt` takes 1 required and 3 optional arguments:
+`docopt` takes 1 required and 3 optional keyword arguments:
 
-- `doc` should be a string that
-describes **options** in a human-readable format, that will be parsed to create
-the option parser.  The simple rules of how to write such a docstring
-(in order to generate option parser from it successfully) are given in the next
-section. Here is a quick example of such a string:
+- `doc` should be a string with help message, written according to rules
+of [docopt language](http://docopt.org). Here is a quick example of such
+a string:
 
         Usage: your_program [options]
 
@@ -67,12 +50,12 @@ section. Here is a quick example of such a string:
         --quiet       Print less text.
         -o FILE       Specify output file [default: ./test.txt].
 
-- `argv` is an optional argument vector; by default it is the argument vector 
-passed to your program (process.argv[1..]). You can supply it with list of 
-strings (similar to process.argv) e.g. ['--verbose', '-o', 'hai.txt'].
+- `argv` is an optional argument vector; by default it is the argument vector
+passed to your program (`process.argv[2..]`). You can supply it with an array
+of strings (similar to `process.argv`) e.g. ['--verbose', '-o', 'hai.txt'].
 
 - `help`, by default `true`, specifies whether the parser should automatically
-print the usage-message (supplied as `doc`) in case `-h` or `--help` options
+print the help message (supplied as `doc`) in case `-h` or `--help` options
 are encountered. After showing the usage-message, the program will terminate.
 If you want to handle `-h` or `--help` options manually (as all other options),
 set `help=false`.
@@ -90,84 +73,12 @@ Note, when `docopt` is set to automatically handle `-h`, `--help` and
 The **return** value is an Object with properties
 (giving long options precedence), e.g:
 
-    {"--benchmark": true,
-     "--count": true,
-     "--doctest": false,
-     "--exclude": ".svn,CVS,.bzr,.hg,.git",
-     "--filename": "*.coffee",
-     "--help": false,
-     "--ignore": false,
-     "--quiet": false,
-     "--repeat": false,
-     "--select": "*.coffee",
-     "--show-source": true,
-     "--statistics": true,
-     "--testsuite": false,
-     "--verbose": true,
-     "--version": false}
-
-You can access positional arguments in ``.
-
-`doc`-string format for your usage-message
-===============================================================================
-
-The main idea behind `docopt` is that a good usage-message (that describes
-options and defaults unambiguously) is enough to generate an option parser.
-
-Here are the simple rules (that you probably already follow) for your
-usage-message to be parsable:
-
-- Every line that starts with `-` or `--` (not counting spaces) is treated
-as an option description, e.g.:
-
-        Options:
-          --verbose   # GOOD
-          -o FILE     # GOOD
-        Other: --bad  # BAD, line does not start with dash "-"
-
-- To specify that an option has an argument, put a word describing that
-argument after space (or equals `=` sign) as shown below.
-You can use comma if you want to separate options. In the example below both
-lines are valid, however you are recommended to stick to a single style.
-
-        -o FILE --output=FILE       # without comma, with "=" sign
-        -i <file>, --input <file>   # with comma, wihtout "=" sing
-
-- Use two spaces to separate options with their informal description.
-
-        --verbose More text.   # BAD, will be treated as if verbose option had
-                               # an argument "More", so use 2 spaces instead
-        -q        Quit.        # GOOD
-        -o FILE   Output file. # GOOD
-        --stdout  Use stdout.  # GOOD, 2 spaces
-
-- If you want to set a default value for an option with an argument, put it
-into the option description, in form `[default: <your-default-value>]`.
-
-        -i INSTANCE      Instance of something [default: 1]
-        --coefficient=K  The K coefficient [default: 2.95]
-        --output=FILE    Output file [default: test.txt]
-        --directory=DIR  Some directory [default: ./]
-
-Something missing? Help porting [docopt](http://docopt.org/) to CoffeeScript/JavaScript!
-===============================================================================
-
-Compatibility notice:
-===============================================================================
-
-In order to maintain your program's compatibility with future versions
-of `docopt.coffee` (as porting more features continues) you are recommended to
-keep the following in the begining of `doc` argument:
-
-    Usage: my_program [options] <arguments>...
-
-or
-
-    Usage: my_program [options] <argument>
-
-or
-
-    Usage: my_program [options]
-
-(followed by an empty line), where you are free to change `my_program`
-and `argument(s)` name inside of `<...>`.
+    {'--timeout': '10',
+     '--baud': '4800',
+     '--version': false,
+     '--help': false,
+     '-h': false,
+     serial: true,
+     tcp: false,
+     '<host>': false,
+     '<port>': '/dev/ttyr01'}
