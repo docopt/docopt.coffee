@@ -1028,6 +1028,11 @@ test "options_without_description", ->
     eq(docopt('usage: git remote [-v | --verbose]', argv: 'remote -v'),
        new Dict([['remote', true], ['-v', true], ['--verbose', false]]))
 
+
+test 'allow_single_underscore', ->
+    eq docopt('usage: prog [-]', argv: '-'), new Dict([['-', true]])
+    eq docopt('usage: prog [-]', argv: ''), new Dict([['-', false]])
+
 `}`
 
 teardown()

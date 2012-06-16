@@ -308,15 +308,7 @@
       if (!args.length || args[0].value !== this.name()) {
         return [false, left, collected];
       }
-      left = (function() {
-        var _i, _len, _results;
-        _results = [];
-        for (_i = 0, _len = left.length; _i < _len; _i++) {
-          l = left[_i];
-          if (l.toString() !== args[0].toString()) _results.push(l);
-        }
-        return _results;
-      })();
+      left.splice(left.indexOf(args[0]), 1);
       collected.push(new Command(this.name(), true));
       return [true, left, collected];
     };
@@ -719,7 +711,7 @@
       }
     } else if (token[0] === '-' && token !== '-') {
       return parse_shorts(tokens, options);
-    } else if ((token[0] === '<' && token[token.length - 1] === '>') || /^[^a-z]*$/.test(token)) {
+    } else if ((token[0] === '<' && token[token.length - 1] === '>') || /^[^a-z]*[A-Z]+[^a-z]*$/.test(token)) {
       return [new Argument(tokens.shift())];
     } else {
       return [new Command(tokens.shift())];
