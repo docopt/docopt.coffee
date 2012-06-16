@@ -149,7 +149,7 @@ class Command extends Pattern
         args = (l for l in left when l.constructor is Argument)
         if not args.length or args[0].value isnt @name()
             return [false, left, collected]
-        left = (l for l in left when l.toString() isnt args[0].toString())
+        left.splice(left.indexOf(args[0]), 1)
         collected.push new Command @name(), true
         [true, left, collected]
 
@@ -400,8 +400,8 @@ parse_atom = (tokens, options) ->
             parse_long tokens, options
     else if token[0] is '-' and token isnt '-'
         parse_shorts tokens, options
-    else if (token[0] is '<' and token[token.length-1] is '>') \
-      or /^[^a-z]*$/.test token
+    else if (token[0] is '<' and
+          token[token.length-1] is '>') or /^[^a-z]*[A-Z]+[^a-z]*$/.test(token)
         [new Argument tokens.shift()]
     else
         [new Command tokens.shift()]
