@@ -3,7 +3,7 @@
 
 > [docopt](http://docopt.org/) is a language for description of command-line
 > interfaces. This is `docopt` implementation in CoffeeScript, that could
-> be used for server-sede CoffeeScript and JavaScript programs.
+> be used for server-side CoffeeScript and JavaScript programs.
 
 Isn't it awesome how modern command-line arguments parsers generate
 help message based on your code?!
