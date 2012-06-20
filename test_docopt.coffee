@@ -925,8 +925,8 @@ test "docopt", ->
             ['-r', false]
             ['--help', false]
             ['FILE', 'file.py']
-            ['INPUT', false]
-            ['OUTPUT', false]
+            ['INPUT', null]
+            ['OUTPUT', null]
         ]
     )
 
@@ -937,9 +937,9 @@ test "docopt", ->
             ['-q', false]
             ['-r', false]
             ['--help', false]
-            ['FILE', false]
-            ['INPUT', false]
-            ['OUTPUT', false]
+            ['FILE', null]
+            ['INPUT', null]
+            ['OUTPUT', null]
         ]
     )
 
@@ -950,9 +950,9 @@ test "docopt", ->
             ['-q', true]
             ['-r', false]
             ['--help', false]
-            ['FILE', false]
-            ['INPUT', false]
-            ['OUTPUT', false]
+            ['FILE', null]
+            ['INPUT', null]
+            ['OUTPUT', null]
         ]
     )
 

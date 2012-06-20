@@ -113,7 +113,7 @@ class Pattern
 
 class Argument extends Pattern
 
-    constructor: (@argname, @value=false) ->
+    constructor: (@argname, @value=null) ->
 
     name: -> @argname
 
@@ -290,7 +290,8 @@ parse_shorts = (tokens, options) ->
                 parsed.push(o)
                 raw = raw[1..]
                 continue
-        opt = Object.create opt[0]
+        o = opt[0]
+        opt = new Option o.short, o.long, o.argcount, o.value
         raw = raw[1..]
         if opt.argcount == 0
             value = true
@@ -317,10 +318,11 @@ parse_long = (tokens, options) ->
         if tokens.error is DocoptExit
             throw new tokens.error "#{raw} is not recognized"
         else
-            o = new Option(null, raw, 0 + !!value)
+            o = new Option(null, raw, +!!value)
             options.push(o)
             return [o]
-    opt = Object.create opt[0]
+    o = opt[0]
+    opt = new Option o.short, o.long, o.argcount, o.value
     if opt.argcount == 1
         if value is null
             if tokens.current() is null
