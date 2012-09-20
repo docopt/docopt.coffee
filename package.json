@@ -1,7 +1,7 @@
 {
     "name": "docopt",
-    "version": "0.1.0",
-    "author": "Brian White <mscdex@mscdex.net>",
+    "version": "0.4.0",
+    "author": "Vladimir Keleshev <vladimir@keleshev.com>",
     "contributors": [
         {
             "name": "Andrew Kassen",
