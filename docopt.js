@@ -804,7 +804,7 @@
 
   parse_doc_options = function(doc) {
     var s, _i, _len, _ref, _results;
-    _ref = doc.split(/^ *-|\n *-/).slice(1);
+    _ref = doc.split(/^\s*-|\n\s*-/).slice(1);
     _results = [];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       s = _ref[_i];
