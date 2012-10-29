@@ -1,8 +1,5 @@
 print = -> console.log [].join.call arguments, ' '
 
-atos = Array.prototype.toString
-Array.prototype.toString = -> '[' + atos.call(@) + ']'
-
 class DocoptLanguageError extends Error
     constructor: (@message) ->
         print @message
