@@ -35,6 +35,7 @@ class Pattern
     fix: ->
         @fix_identities()
         @fix_list_arguments()
+        @fix_list_options()
 
     fix_identities: (uniq=null) ->
         """Make pattern-tree tips point to same object if they are equal."""
@@ -62,6 +63,17 @@ class Pattern
                 counts[c] = (counts[c] ? 0) + 1
             e.value = [] for e in child \
                 when counts[e] > 1 and e.constructor is Argument
+        @
+
+    fix_list_options: ->
+        """Find options that should accumulate values and fix them."""
+        either = (c.children for c in @either().children)
+        for child in either
+            counts = {}
+            for c in child
+                counts[c] = (counts[c] ? 0) + 1
+            e.value = [] for e in child \
+                when counts[e] > 1 and e.constructor is Option
         @
 
     either: ->
@@ -182,8 +194,16 @@ class Option extends Pattern
         new Option short, long, argcount, value
 
     match: (left, collected=[]) ->
-        left_ = (l for l in left when (l.constructor isnt Option \
-                 or @short isnt l.short or @long isnt l.long))
+        left_ = []
+        values = []
+        for l in left
+            if l.constructor is Option and @short is l.short and @long is l.long
+                values.push l.value
+            else
+                left_.push l
+        if @value.constructor is Array
+            @value = @value.concat(values)
+            collected.push @
         [left.join(', ') isnt left_.join(', '), left_, collected]
 
 class AnyOptions extends Pattern
