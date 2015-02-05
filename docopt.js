@@ -699,7 +699,7 @@
     tokens = new TokenStream(source.replace(/([\[\]\(\)\|]|\.\.\.)/g, ' $1 '), DocoptLanguageError);
     result = parse_expr(tokens, options);
     if (tokens.current() === !null) {
-      raise(tokens.error('unexpected ending: ' + tokens.join(' ')));
+      throw tokens.error('unexpected ending: ' + tokens.join(' '));
     }
     return new Required(result);
   };
@@ -745,7 +745,7 @@
       tokens.shift();
       result = [new Required(parse_expr(tokens, options))];
       if (tokens.shift() !== ')') {
-        raise(tokens.error("Unmatched '('"));
+        throw tokens.error("Unmatched '('");
       }
       return result;
     } else if (token === '[') {
@@ -757,7 +757,7 @@
         result = [new Optional(parse_expr(tokens, options))];
       }
       if (tokens.shift() !== ']') {
-        raise(tokens.error("Unmatched '['"));
+        throw tokens.error("Unmatched '['");
       }
       return result;
     } else if (token.slice(0, 2) === '--') {

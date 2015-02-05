@@ -336,7 +336,7 @@ parse_pattern = (source, options) ->
                          DocoptLanguageError
     result = parse_expr tokens, options
     if tokens.current() is not null
-        raise tokens.error 'unexpected ending: ' + tokens.join ' '
+        throw tokens.error 'unexpected ending: ' + tokens.join ' '
     new Required result
 
 
@@ -380,7 +380,7 @@ parse_atom = (tokens, options) ->
 
         result = [new Required parse_expr tokens, options]
         if tokens.shift() != ')'
-            raise tokens.error "Unmatched '('"
+            throw tokens.error "Unmatched '('"
         result
     else if token is '['
         tokens.shift()
@@ -390,7 +390,7 @@ parse_atom = (tokens, options) ->
         else
             result = [new Optional parse_expr tokens, options]
         if tokens.shift() != ']'
-            raise tokens.error "Unmatched '['"
+            throw tokens.error "Unmatched '['"
         result
     else if token[0..1] is '--'
         if token is '--'
