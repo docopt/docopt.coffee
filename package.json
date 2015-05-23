@@ -20,7 +20,7 @@
     "main": "docopt.js",
     "engines": { "node" : ">=0.8.0" },
     "keywords": [ "command", "options", "argument", "args", "cli", "commandline" ],
-    "licenses": "MIT",
+    "license": "MIT",
     "repository" : {
         "type": "git",
         "url": "git://github.com/scarnie/docopt.coffee.git"
