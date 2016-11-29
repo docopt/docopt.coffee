@@ -82,3 +82,17 @@ The **return** value is an Object with properties
      tcp: false,
      '<host>': false,
      '<port>': '/dev/ttyr01'}
+
+JavaScript Usage
+===============================================================================
+
+```javascript
+doc = `Usage:
+  quick_example.coffee tcp <host> <port> [--timeout=<seconds>]
+  quick_example.coffee serial <port> [--baud=9600] [--timeout=<seconds>]
+  quick_example.coffee -h | --help | --version
+`;
+var docopt = require('docopt').docopt;
+
+console.log(docopt(doc, {version: '0.1.1rc'}));
+```
