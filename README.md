@@ -35,7 +35,7 @@ pass to the `docopt` function.
 API `{docopt} = require 'docopt'`
 ===============================================================================
 
-###`options = docopt(doc, {argv: process.argv[2..], help: true, version: null})`
+### `options = docopt(doc, {argv: process.argv[2..], help: true, version: null})`
 
 `docopt` takes 1 required and 3 optional keyword arguments:
 
