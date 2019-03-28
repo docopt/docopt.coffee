@@ -361,7 +361,13 @@
 
     Option.parse = function(description) {
       var argcount, long, matched, options, s, short, value, _, _i, _len, _ref, _ref1, _ref2, _ref3;
-      description = description.replace(/^\s*|\s*$/g, '');
+      description = description.replace(/^\s*|\s*$/g, '').split('\n');
+      if (description.length > 1) {
+        for (let i = 1; i < description.length; i++) {
+          description[i] = description[i].trim();
+        }
+      }
+      description = description.join(' ');;
       _ref1 = (_ref = description.match(/(.*?)  (.*)/)) != null ? _ref : [null, description, ''], _ = _ref1[0], options = _ref1[1], description = _ref1[2];
       options = options.replace(/,|=/g, ' ');
       _ref2 = [null, null, 0, false], short = _ref2[0], long = _ref2[1], argcount = _ref2[2], value = _ref2[3];
