@@ -363,9 +363,14 @@
       var argcount, long, matched, options, s, short, value, _, _i, _len, _ref, _ref1, _ref2, _ref3;
       description = description.replace(/^\s*|\s*$/g, '').split('\n');
       if (description.length > 1) {
+        let d = [description[0]];
         for (let i = 1; i < description.length; i++) {
-          description[i] = description[i].trim();
+          if (description[i] === '') {
+            break;
+          }
+          d.push(description[i].trim())
         }
+        description = d;
       }
       description = description.join(' ');;
       _ref1 = (_ref = description.match(/(.*?)  (.*)/)) != null ? _ref : [null, description, ''], _ = _ref1[0], options = _ref1[1], description = _ref1[2];
